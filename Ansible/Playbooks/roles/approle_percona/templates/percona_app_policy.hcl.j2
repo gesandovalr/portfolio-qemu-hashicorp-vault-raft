@@ -1,0 +1,47 @@
+## AppRole Config ##
+
+path "auth/token/create" {
+  capabilities = ["update"]
+}
+
+## General Config Node01 ##
+path "{{var_group.percona_node_01_short_name}}/config" {
+  capabilities = ["read"]
+}
+
+## General Config Node02 ##
+path "{{var_group.percona_node_02_short_name}}/config" {
+  capabilities = ["read"]
+}
+
+## General Config Node03 ##
+path "{{var_group.percona_node_03_short_name}}/config" {
+  capabilities = ["read"]
+}
+
+## Node01 Config ##
+path "{{var_group.percona_node_01_short_name}}/metadata/*" {
+  capabilities = ["list"]
+}
+
+path "{{var_group.percona_node_01_short_name}}/data/*" {
+  capabilities = ["create", "read", "delete", "update", "list"]
+}
+
+## Node02 Config ##
+path "{{var_group.percona_node_02_short_name}}/metadata/*" {
+  capabilities = ["list"]
+}
+
+path "{{var_group.percona_node_02_short_name}}/data/*" {
+  capabilities = ["create", "read", "delete", "update", "list"]
+}
+
+## Node03 Config ##
+path "{{var_group.percona_node_03_short_name}}/metadata/*" {
+  capabilities = ["list"]
+}
+
+path "{{var_group.percona_node_03_short_name}}/data/*" {
+  capabilities = ["create", "read", "delete", "update", "list"]
+}

@@ -1,0 +1,19 @@
+---
+  - name: Add J2 template vault policy    
+    template:
+      src: templates/percona_app_policy.hcl.j2
+      dest: "/opt/vault/percona_app_policy.hcl"
+      owner: vault
+      group: vault
+    when: ansible_hostname in var_group['node_01_fqdn']
+
+  - name: Add J2 template KV and approle creation    
+    template:
+      src: templates/approle_creation.sh.j2
+      dest: "/opt/vault/approle_creation.sh"
+      mode: a+x
+    when: ansible_hostname in var_group['node_01_fqdn']
+    
+  - name: Execute Script
+    shell: sh /opt/vault/approle_creation.sh    
+    when: ansible_hostname in var_group['node_01_fqdn']

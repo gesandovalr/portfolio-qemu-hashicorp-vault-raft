@@ -1,0 +1,61 @@
+---
+  - hosts: all
+    become: true
+    vars_files:
+      - group_vars/deploy_info.yaml
+      - group_vars/all.yaml    
+    
+    roles:
+      - prerequisites_install
+      - hosts_configuration
+
+  - hosts: all
+    become: true
+    vars_files:
+      - group_vars/deploy_info.yaml  
+      - group_vars/all.yaml       
+
+    roles:
+      - certificate_authority
+
+  - hosts: all
+    become: true
+    vars_files:
+      - group_vars/deploy_info.yaml
+      - group_vars/all.yaml         
+        
+    roles:
+      - vault_certificate_install
+
+  - hosts: all
+    become: true
+    vars_files:
+      - group_vars/deploy_info.yaml
+      - group_vars/all.yaml                
+    
+    roles:
+      - vault_install
+   
+  - hosts: all
+    become: true
+    vars_files:
+      - group_vars/deploy_info.yaml
+      - group_vars/all.yaml    
+    
+    roles:
+      - keepalived_install
+  
+  - hosts: all
+    become: true
+    vars_files:
+      - group_vars/deploy_info.yaml
+      - group_vars/all.yaml    
+    
+    roles:
+      - approle_percona
+
+  - hosts: all
+    become: true
+    tasks: 
+     - name: Clear gathered facts from all currently targeted hosts
+       ansible.builtin.meta: clear_facts

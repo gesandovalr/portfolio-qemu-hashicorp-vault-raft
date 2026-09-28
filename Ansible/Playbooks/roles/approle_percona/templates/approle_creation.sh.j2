@@ -1,0 +1,36 @@
+#!/bin/bash
+
+## Change Directory
+cd /opt/vault/
+
+## Capture root token value on init file 
+token_vault=$(awk -F': ' '/Initial Root Token/ {sub(/^[ \t]+/, "", $2); print $2}' init.file)
+
+## Access Vault with captured values
+vault login -method=token token=$token_vault
+
+## Enable Approle auth method with the Path approle_percona
+vault auth enable -path=approle_percona approle
+
+## Create a policy based on a template
+vault policy write policy_app_percona /opt/vault/percona_app_policy.hcl
+
+## Create an approle with the the policy created previously
+vault write auth/approle_percona/role/percona_app policies="policy_app_percona"
+
+## Create the following KV engines
+vault secrets enable -path="{{var_group.percona_node_01_short_name}}" kv-v2
+vault secrets enable -path="{{var_group.percona_node_02_short_name}}" kv-v2
+vault secrets enable -path="{{var_group.percona_node_03_short_name}}" kv-v2
+
+## Store values for role-id and secret-ID on variables
+role_id=$(vault read auth/approle_percona/role/percona_app/role-id)
+secret_id=$(vault write -force auth/approle_percona/role/percona_app/secret-id)
+
+## Capture Role and Secret value for on variables
+secret_value=$(echo "$secret_id" | awk '$1 == "secret_id" {print $2}')
+
+## Dump secret-id over a file
+echo "$role_id" >> /opt/vault/approle_percona_role_id
+echo "$secret_value" >> /opt/vault/approle_percona_secret_id
+ 
