@@ -7,7 +7,6 @@ disable_mlock = true
 listener "tcp" {
    address = "0.0.0.0:8200"
    cluster_addr = "0.0.0.0:8201"
-   tls_disable = false
    tls_cert_file = "/opt/vault/tls/tls.crt"
    tls_key_file = "/opt/vault/tls/tls.key"
    tls_client_ca_file = "/opt/vault/tls/tls_ca.pem"
@@ -37,15 +36,6 @@ storage "raft" {
    
    }
 
-}
-
-## Azure seal configuration stanzas
-seal "azurekeyvault" {
-  tenant_id      = "{{ secret.tenant_id }}"
-  client_id      = "{{ secret.client_id }}"
-  client_secret  = "{{ secret.client_secret }}"
-  vault_name     = "{{ secret.vault_name }}"
-  key_name       = "{{ secret.key_name }}"
 }
 
 cluster_addr            = "https://{{var_group.node_03_fqdn}}:8201"

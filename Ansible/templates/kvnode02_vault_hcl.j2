@@ -11,7 +11,6 @@ listener "tcp" {
    tls_cert_file = "/opt/vault/tls/tls.crt"
    tls_key_file = "/opt/vault/tls/tls.key"
    tls_client_ca_file = "/opt/vault/tls/tls_ca.pem"
-   tls_disable=false
 }
 
 storage "raft" {
@@ -37,15 +36,6 @@ storage "raft" {
    
    }
 
-}
-
-## Azure seal configuration stanzas
-seal "azurekeyvault" {
-  tenant_id      = "{{ secret.tenant_id }}"
-  client_id      = "{{ secret.client_id }}"
-  client_secret  = "{{ secret.client_secret }}"
-  vault_name     = "{{ secret.vault_name }}"
-  key_name       = "{{ secret.key_name }}"
 }
 
 cluster_addr            = "https://{{var_group.node_02_fqdn}}:8201"
