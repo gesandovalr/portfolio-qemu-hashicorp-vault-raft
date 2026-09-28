@@ -1,61 +1,68 @@
 ---
-  - hosts: all
-    become: true
-    vars_files:
-      - group_vars/deploy_info.yaml
-      - group_vars/all.yaml    
-    
-    roles:
-      - prerequisites_install
-      - hosts_configuration
+- name: "Install prerequisites and configure hosts"
+  hosts: all
+  become: true
 
-  - hosts: all
-    become: true
-    vars_files:
-      - group_vars/deploy_info.yaml  
-      - group_vars/all.yaml       
+  vars_files:
+    - group_vars/deploy_info.yaml
+    - group_vars/all.yaml
 
-    roles:
-      - certificate_authority
+  roles:
+    - prerequisites_install
+    - hosts_configuration
 
-  - hosts: all
-    become: true
-    vars_files:
-      - group_vars/deploy_info.yaml
-      - group_vars/all.yaml         
-        
-    roles:
-      - vault_certificate_install
+- name: "Install certificate authority and generate certificates"
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/deploy_info.yaml
+    - group_vars/all.yaml
 
-  - hosts: all
-    become: true
-    vars_files:
-      - group_vars/deploy_info.yaml
-      - group_vars/all.yaml                
-    
-    roles:
-      - vault_install
-   
-  - hosts: all
-    become: true
-    vars_files:
-      - group_vars/deploy_info.yaml
-      - group_vars/all.yaml    
-    
-    roles:
-      - keepalived_install
-  
-  - hosts: all
-    become: true
-    vars_files:
-      - group_vars/deploy_info.yaml
-      - group_vars/all.yaml    
-    
-    roles:
-      - approle_percona
+  roles:
+    - certificate_authority
 
-  - hosts: all
-    become: true
-    tasks: 
-     - name: Clear gathered facts from all currently targeted hosts
-       ansible.builtin.meta: clear_facts
+- name: "Install Vault certificates"
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/deploy_info.yaml
+    - group_vars/all.yaml
+
+  roles:
+    - vault_certificate_install
+
+- name: "Install Vault"
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/deploy_info.yaml
+    - group_vars/all.yaml
+
+  roles:
+    - vault_install
+
+- name: "Install Keepalived"
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/deploy_info.yaml
+    - group_vars/all.yaml
+
+  roles:
+    - keepalived_install
+
+  # - hosts: all
+  #  become: true
+  #  vars_files:
+  #    - group_vars/deploy_info.yaml
+  #    - group_vars/all.yaml
+
+  #  roles:
+  #    - approle_percona
+
+- name: "Clear gathered facts from all currently targeted hosts"
+  hosts: all
+  become: true
+  tasks:
+    - name: Clear gathered facts from all currently targeted hosts
+      ansible.builtin.meta: clear_facts
