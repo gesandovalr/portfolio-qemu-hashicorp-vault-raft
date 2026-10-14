@@ -1,2 +1,4 @@
 secrets/
 .vault_pass
+collections/
+.tls
