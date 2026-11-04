@@ -2,7 +2,6 @@ locals {
   cloud_init_user_data = {
     preserve_hostname = false
     manage_etc_hosts  = true
-
     users = [
       {
         name        = "almalinux"
@@ -10,90 +9,48 @@ locals {
         sudo        = ["ALL=(ALL) NOPASSWD:ALL"]
         groups      = ["wheel"]
         shell       = "/bin/bash"
-
-        ssh_authorized_keys = [
-          var.vm_ssh_public_key
-        ]
+        ssh_authorized_keys = [var.vm_ssh_public_key]
       }
     ]
-
     ssh_pwauth   = false
     disable_root = true
   }
 }
 
-resource "libvirt_cloudinit_disk" "commoninit" {
-  for_each = var.VMS
+data "hyperv_iso_volume" "cloudinit" {
+  for_each     = var.VMS
+  volume_label = "CIDATA"
 
-  name = "${each.key}-cloudinit"
-
-  meta_data = yamlencode({
-    instance-id    = each.key
-    local-hostname = each.value.name
-  })
-
-  user_data = "#cloud-config\n${yamlencode(merge(
-    local.cloud_init_user_data,
-    {
+  files = {
+    "meta-data" = yamlencode({
+      "instance-id"    = each.key
+      "local-hostname" = each.value.name
+    })
+    "user-data" = "#cloud-config\n${yamlencode(merge(local.cloud_init_user_data, {
       hostname = each.value.name
       fqdn     = "${each.value.name}.${var.vm_domain_name}"
-    }
-  ))}"
-
-  network_config = yamlencode({
-    version = 2
-
-    ethernets = {
-      eth0 = {
-        dhcp4 = false
-
-        addresses = [
-          "${each.value.ipv4_add_nic}/${each.value.netmask}"
-        ]
-
-        routes = [
-          {
-            to  = "0.0.0.0/0"
-            via = var.vm_gateway
+    }))}"
+    "network-config" = yamlencode({
+      version = 2
+      ethernets = {
+        # Preserved from the original libvirt setup; verify actual NIC name on Hyper-V.
+        eth0 = {
+          dhcp4 = false
+          addresses = ["${each.value.ipv4_add_nic}/${each.value.netmask}"]
+          routes = [{to = "0.0.0.0/0", via = var.vm_gateway}]
+          nameservers = {
+            addresses = ["8.8.8.8", "8.8.4.4"]
+            search    = [var.vm_domain_name]
           }
-        ]
-
-        nameservers = {
-          addresses = [
-            "8.8.8.8",
-            "8.8.4.4"
-          ]
-
-          search = [
-            var.vm_domain_name
-          ]
         }
       }
-    }
-  })
+    })
+  }
 }
 
-resource "libvirt_volume" "cloudinit_iso" {
+resource "hyperv_image_file" "cloudinit_iso" {
   for_each = var.VMS
-
-  name = "${each.key}-cloudinit.iso"
-  pool = var.vm_pool_name
-
-  create = {
-    content = {
-      url = libvirt_cloudinit_disk.commoninit[each.key].path
-    }
-  }
-
-  target = {
-    permissions = {
-      owner = "1000"
-      group = "1000"
-      mode  = "0644"
-    }
-  }
-
-  depends_on = [
-    libvirt_cloudinit_disk.commoninit
-  ]
+  destination_path    = "${trimsuffix(var.hyperv_vm_storage_path, "/")}/${each.key}-cloudinit.iso"
+  content_base64      = data.hyperv_iso_volume.cloudinit[each.key].content_base64
+  replace_while_mounted = true
 }

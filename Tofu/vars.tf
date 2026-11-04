@@ -1,62 +1,44 @@
-## Variables  
-
-## Define Storage Pool Name
-variable "vm_pool_name" {
-  description = "Name of the libvirt storage pool"
-  type        = string
-  default     = "Virtual_Machines"
-  
-}
-
-## Define Storage Pool Path
-variable "vm_pool_path" {
-  description = "Filesystem path used by the libvirt storage pool"
+variable "hyperv_base_image_path" {
+  description = "Absolute VHDX path on the Hyper-V host; must already exist and be bootable."
   type        = string
 }
 
-## Define base image path
-variable "vm_base_template_name" {
-    description = "name of the local QCOW2 base image"
-    type        = string
-
+variable "hyperv_vm_storage_path" {
+  description = "Existing folder on the Hyper-V host for per-VM VHDX and CIDATA ISO files."
+  type        = string
 }
 
-## Define base image path
-variable "vm_base_image_path" {
-    description = "Path to the local QCOW2 base image"
-    type        = string
+variable "hyperv_vm_generation" {
+  description = "Hyper-V generation matching the golden image's boot mode: 1=BIOS, 2=UEFI."
+  type        = number
+  validation {
+    condition     = contains([1, 2], var.hyperv_vm_generation)
+    error_message = "hyperv_vm_generation must be 1 (BIOS) or 2 (UEFI)."
+  }
 }
 
 variable "vm_ssh_public_key" {
-    description = "Public SSH key for the VMs"
-    type        = string
+  description = "Public SSH key for cloud-init user"
+  type        = string
 }
 
 variable "vm_network_name" {
-  description = "Existing libvirt network used by the VMs"
+  description = "Name of an existing Hyper-V virtual switch (not a libvirt network)."
   type        = string
-  default     = "LAN"
-}
-
-variable "vm_disk_capacity" {
-  description = "Existing libvirt network used by the VMs"
-  type        = number
-  default     = "50"
 }
 
 variable "vm_domain_name" {
-  description = "Domain name for the VMs"
-  type        = string
+  type = string
 }
 
 variable "vm_gateway" {
-  type    = string
+  type = string
 }
 
 variable "VMS" {
   type = map(object({
     name         = string
-    memory       = number
+    memory       = number # MiB
     vcpu         = number
     ipv4_add_nic = string
     netmask      = number
