@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     hyperv = {
-      source  = "windsorcli/hyperv"
+      source  = "registry.terraform.io/windsorcli/hyperv"
       version = "= 0.5.0"
     }
   }
@@ -9,7 +9,16 @@ terraform {
 
 # Host access is configured through HYPERV_* environment variables.
 # See README-HYPERV.md; do not commit secrets in *.tfvars.
-provider "hyperv" {}
+provider "hyperv" {
+  backend  = "ssh"
+  host     = var.hyperv_host
+  username = var.hyperv_username
+
+  ssh = {
+    private_key_path = "/home/gesora/.ssh/id_ed25519"
+    known_hosts_path = "/home/gesora/.ssh/known_hosts"
+  }
+}
 
 data "hyperv_virtual_switch" "vm_network" {
   name = var.vm_network_name

@@ -1,3 +1,13 @@
+variable "hyperv_host" {
+  description = "Existing folder on the Hyper-V host for per-VM VHDX and CIDATA ISO files."
+  type        = string
+}
+
+variable "hyperv_username" {
+  description = "Existing folder on the Hyper-V host for per-VM VHDX and CIDATA ISO files."
+  type        = string
+}
+
 variable "hyperv_base_image_path" {
   description = "Absolute VHDX path on the Hyper-V host; must already exist and be bootable."
   type        = string
